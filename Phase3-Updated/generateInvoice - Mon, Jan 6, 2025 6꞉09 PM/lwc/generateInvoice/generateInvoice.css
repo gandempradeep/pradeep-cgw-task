@@ -1,0 +1,16 @@
+.custom-container{
+	color : black;
+}
+
+.slds-table {
+    width: 100%;
+	margin: 0; /* Remove extra spacing */
+    border-collapse: collapse; /* Avoid extra spaces between cells */
+}
+.column-divider {
+    border-right: 1px solid #dcdcdc; /* Add vertical line between columns */
+}
+td {
+    padding: 0.5rem;
+    text-align: left;
+}

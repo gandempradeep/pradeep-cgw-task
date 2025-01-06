@@ -1,0 +1,17 @@
+<template>
+    <lightning-card class="slds-var-p-horizontal_medium">
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+            <tbody>
+                <template for:each={rows} for:item="row">
+                    <tr key={row.id}>
+                        <!-- Static Value Column -->
+                        <td class="column-divider">{row.staticValue}</td>
+                        <!-- Dynamic Value Column -->
+                        <td>{row.dynamicValue}</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <lightning-button label="Show JSON" onclick={navigateToPage}></lightning-button>
+    </lightning-card>
+</template>

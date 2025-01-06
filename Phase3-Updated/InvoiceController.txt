@@ -1,0 +1,59 @@
+/**
+* @File Name : InvoiceController.cls
+* @Description :
+* @Author :
+* @Last Modified By :
+* @Last Modified On : December 30, 2024
+* @Modification Log :
+*==============================================================================
+* Ver | Date | Author | Modification
+*==============================================================================
+* 1.0 | December 30, 2024 |   | Initial Version
+**/
+
+public class InvoiceController {
+	
+	@AuraEnabled(cacheable=true)
+	public static sObject getObjectInfoData(Id recordId, String queryString){
+		String objectType = recordId.getSObjectType().getDescribe().getName();//Will ge the objectName by using recordId helps us to dynamically get the data
+		String query = 'SELECT '+queryString+' FROM '+objectType+' WHERE Id=\''+String.escapeSingleQuotes(recordId)+'\''; // Having a dynamic query facilitates us to retrive the data dynamically based on objectType that we get
+		List<sObject> result = Database.query(query);
+		if (!result.isEmpty()) {
+        	return result[0];
+		} else {
+			return null;
+		}
+	}
+
+	@AuraEnabled
+	public static String insertInvoiceAndLinrItems(Map<String, String> parentMap, Map<Id, List<Map<String, Object>>> childMap){
+
+        Invoice__c parent = new Invoice__c();
+        parent.Account__c = parentMap.get('Account__c');
+        parent.Invoice_Date__c = Date.valueOf(parentMap.get('Invoice_Date__c'));
+        parent.Due_Date__c = Date.valueOf(parentMap.get('Due_Date__c'));
+        parent.Invoice_Reference__c = parentMap.get('Invoice_Reference__c');
+        insert parent;
+
+		Map<Id, Id> oldToNewParentIdMap = new Map<Id, Id>();
+        oldToNewParentIdMap.put(parent.Invoice_Reference__c, parent.Id);
+
+        List<Line_Item__c> childRecords = new List<Line_Item__c>();
+        for (Id oldParentId : childMap.keySet()) {
+            Id newParentId = oldToNewParentIdMap.get(oldParentId);
+            if (newParentId != null) {
+                for (Map<String, Object> childData : childMap.get(oldParentId)) {
+                    Line_Item__c child = new Line_Item__c();
+                    child.Invoice__c = newParentId; // Assign new parent ID
+                    for (String field : childData.keySet()) {
+                        child.put(field, childData.get(field)); // Dynamic field assignment
+                    }
+                    childRecords.add(child);
+                }
+            }
+        }
+        insert childRecords;
+
+        return parent.Id;
+    }
+}
